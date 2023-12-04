@@ -1,2 +1,3 @@
-# AWS-wargame
-AWS용 워게임 시험용 서버
+# test-04DEC
+
+테스트 목적
