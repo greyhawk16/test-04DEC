@@ -1,3 +1,3 @@
 variable "ssh-private-key-for-ec2" {
-  default = "./joonhun_SSTI_key_TF8.pem"
+  default = "./joonhun_cmd-inj_key_TF1.pem"
 }

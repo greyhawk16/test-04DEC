@@ -1,6 +1,6 @@
 # EC2 role 생성
 resource "aws_iam_role" "test_role" {
-  name               = "joonhun_SSTI_STS_role-TF8"
+  name               = "joonhun_cmd-inj_role-TF8"
   path               = "/"
   assume_role_policy = <<EOF
   {
@@ -20,66 +20,17 @@ resource "aws_iam_role" "test_role" {
 }
 
 # STS 관련 policy 생성
-resource "aws_iam_role_policy" "hello_sts" {
-  name   = "joonhun_SSTI_STS-TF8"
-  role   = aws_iam_role.test_role.id
-  policy = <<EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "VisualEditor0",
-            "Effect": "Allow",
-            "Action": [
-                "sts:GetSessionToken",
-                "sts:DecodeAuthorizationMessage",
-                "sts:GetAccessKeyInfo",
-                "sts:GetCallerIdentity",
-                "sts:AssumeRole",
-                "sts:GetServiceBearerToken"
-            ],
-            "Resource": "*"
-        },
-        {
-            "Sid": "VisualEditor1",
-            "Effect": "Allow",
-            "Action": "sts:*",
-            "Resource": "arn:aws:iam::405607210241:role/joonhun_SSTI_role"
-        }
-    ]
-}
-EOF
-}
 
-# iamReadOnly 정책 생성
-resource "aws_iam_role_policy" "iamReadOnly" {
-  name   = "joonhun_IAMReadOnly-TF8"
-  role   = aws_iam_role.test_role.id
-  policy = <<EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "iam:GenerateCredentialReport",
-                "iam:GenerateServiceLastAccessedDetails",
-                "iam:Get*",
-                "iam:List*",
-                "iam:SimulateCustomPolicy",
-                "iam:SimulatePrincipalPolicy"
-            ],
-            "Resource": "*"
-        }
-    ]
-}
-EOF
+# S3ReadOnly 정책 생성
+resource "aws_iam_role_policy_attachment" "example_attachment" {
+  role       = aws_iam_role.test_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
 }
 
 
 # EC2 인스턴스 프로필 생성
-resource "aws_iam_instance_profile" "joonhun_EC2_profile-TF8" {
-  name = "joonhun_EC2_profile-TF8"
+resource "aws_iam_instance_profile" "joonhun_EC2_cmd-inj_profile-TF1" {
+  name = "joonhun_EC2_cmd-inj_profile-TF1"
   role = "${aws_iam_role.test_role.name}"
 }
 
@@ -91,20 +42,20 @@ resource "tls_private_key" "this" {
 }
 
 resource "aws_key_pair" "this" {
-  key_name      = "joonhun_SSTI_key_TF8"
+  key_name      = "joonhun_cmd-inj_key_TF1"
   public_key    = tls_private_key.this.public_key_openssh
 
   provisioner "local-exec" {
     command = <<-EOT
-      echo "${tls_private_key.this.private_key_pem}" > joonhun_SSTI_key_TF8.pem
+      echo "${tls_private_key.this.private_key_pem}" > joonhun_cmd-inj_key_TF1.pem
     EOT
   }
 }
 
 
 resource "aws_security_group" "alone_web" {
-  name        = "Alone EC2 Security Group"
-  description = "Alone EC2 Security Group"
+  name        = "SG_cmd-inj"
+  description = "SG_cmd-inj"
   ingress {
     from_port = 22                                           
     to_port = 22                                             
@@ -136,11 +87,11 @@ resource "aws_instance" "app_server" {
   ami = "ami-079db87dc4c10ac91"  # AMI from "joonhun_SSTI_rev3"
   instance_type = "t3.micro"
   key_name = "${aws_key_pair.this.key_name}"
-  vpc_security_group_ids = ["${aws_security_group.alone_web.id}"] # ["sg-0f1333e985b024d83"]
-  iam_instance_profile = "${aws_iam_instance_profile.joonhun_EC2_profile-TF8.name}"
+  vpc_security_group_ids = ["${aws_security_group.alone_web.id}"] 
+  iam_instance_profile = "${aws_iam_instance_profile.joonhun_EC2_cmd-inj_profile-TF1.name}"
   
   tags = {
-    Name = "joonhun_ExampleAppServerInstance-TF8"
+    Name = "joonhun_cmd-inj_Server-TF1"
   }
   root_block_device {
     volume_size         = 30 
