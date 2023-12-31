@@ -1,6 +1,6 @@
 # EC2 role 생성
 resource "aws_iam_role" "test_role" {
-  name               = "joonhun_cmd-inj_role-TF8"
+  name               = "cmd-inj-role"
   path               = "/"
   assume_role_policy = <<EOF
   {
@@ -29,8 +29,8 @@ resource "aws_iam_role_policy_attachment" "example_attachment" {
 
 
 # EC2 인스턴스 프로필 생성
-resource "aws_iam_instance_profile" "joonhun_EC2_cmd-inj_profile-TF1" {
-  name = "joonhun_EC2_cmd-inj_profile-TF1"
+resource "aws_iam_instance_profile" "cmd-inj_EC2-profile" {
+  name = "cmd-inj__EC2-profile"
   role = "${aws_iam_role.test_role.name}"
 }
 
@@ -42,12 +42,12 @@ resource "tls_private_key" "this" {
 }
 
 resource "aws_key_pair" "this" {
-  key_name      = "joonhun_cmd-inj_key_TF1"
+  key_name      = "cmd-inj_key"
   public_key    = tls_private_key.this.public_key_openssh
 
   provisioner "local-exec" {
     command = <<-EOT
-      echo "${tls_private_key.this.private_key_pem}" > joonhun_cmd-inj_key_TF1.pem
+      echo "${tls_private_key.this.private_key_pem}" > cmd-inj_key.pem
     EOT
   }
 }
@@ -88,36 +88,45 @@ resource "aws_instance" "app_server" {
   instance_type = "t3.micro"
   key_name = "${aws_key_pair.this.key_name}"
   vpc_security_group_ids = ["${aws_security_group.alone_web.id}"] 
-  iam_instance_profile = "${aws_iam_instance_profile.joonhun_EC2_cmd-inj_profile-TF1.name}"
+  iam_instance_profile = "${aws_iam_instance_profile.cmd-inj_EC2-profile.name}"
   
   tags = {
-    Name = "joonhun_cmd-inj_Server-TF1"
+    Name = "CMD-inj_app_server"
   }
   root_block_device {
     volume_size         = 30 
   }
+
+  connection {
+      type = "ssh"
+      user = "ec2-user"
+      host = self.public_ip
+      private_key = "${file(var.ssh-private-key-for-ec2)}"
+  }
+
   provisioner "file" {
       source = "../code"
       destination = "/home/ec2-user/code"
-      connection {
-        type = "ssh"
-        user = "ec2-user"
-        host = self.public_ip
-        private_key = "${file(var.ssh-private-key-for-ec2)}"
-      }
   }
 
-
-  user_data = <<-UD
-        #!/bin/bash
-        sudo yum update
-        sudo yum install git -y
-        sudo yum install pip -y
-        sudo yum install nc -y
-        pip3 install flask
-        cd ./code
-        sudo python3 ./app.py
-        UD
+  provisioner "remote-exec" {
+    inline = [
+      #!/bin/bash
+      "sudo yum update",
+      "sudo yum install git -y",
+      "sudo yum install pip -y",
+      "sudo yum install nc -y",
+      "pip3 install flask",
+      "sudo amazon-linux-extras enable nginx1.12",
+      "sudo yum -y install nginx",
+      "sudo systemctl start nginx",
+      "python3 ./code/app.py"
+    ]
+  }
+  # user_data = <<-UD
+  #        #!/bin/bash
+  #        python3 ./code/app.py
+  #        UD
 }
 
 # EIP

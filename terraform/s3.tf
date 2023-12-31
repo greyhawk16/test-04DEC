@@ -1,7 +1,18 @@
-resource "aws_s3_bucket" "main" {
-  bucket = "joonhun_cmd-inj_bucket"
+resource "aws_s3_bucket" "cmd-inj-bucket" {
+  bucket = "cmd-inj-bucket"
+  
 
   tags = {
-    Name        = "joonhun_cmd-inj_bucket"
+    Name        = "cmd-inj-bucket"
+  }
+}
+
+
+resource "aws_s3_bucket_object" "resource" {
+  bucket = "${aws_s3_bucket.cmd-inj-bucket.id}"
+  key = "flag.txt"
+  source = "../files/flag.txt"
+  tags = {
+    Name = "cmd-inj-flag"
   }
 }
