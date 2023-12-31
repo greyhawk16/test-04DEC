@@ -19,7 +19,6 @@ resource "aws_iam_role" "test_role" {
   EOF
 }
 
-# STS 관련 policy 생성
 
 # S3ReadOnly 정책 생성
 resource "aws_iam_role_policy_attachment" "example_attachment" {
@@ -33,7 +32,6 @@ resource "aws_iam_instance_profile" "cmd-inj_EC2-profile" {
   name = "cmd-inj__EC2-profile"
   role = "${aws_iam_role.test_role.name}"
 }
-
 
 
 resource "tls_private_key" "this" {
@@ -128,6 +126,7 @@ resource "aws_instance" "app_server" {
   #        python3 ./code/app.py
   #        UD
 }
+
 
 # EIP
 resource "aws_eip" "elasticip" {
