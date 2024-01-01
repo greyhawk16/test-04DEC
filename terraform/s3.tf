@@ -1,7 +1,5 @@
 resource "aws_s3_bucket" "cmd-inj-bucket" {
   bucket = "cmd-inj-bucket"
-  
-
   tags = {
     Name        = "cmd-inj-bucket"
   }
