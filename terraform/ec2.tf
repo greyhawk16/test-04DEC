@@ -107,6 +107,13 @@ resource "aws_instance" "app_server" {
       destination = "/home/ec2-user/code"
   }
 
+    # Write ID of created EC2 instace to "data.txt"
+  provisioner "local-exec" {
+    command = <<-EOT
+      echo "${aws_instance.app_server.id}" > instance_id.txt
+    EOT
+  }
+
   provisioner "remote-exec" {
     inline = [
       #!/bin/bash
@@ -117,16 +124,9 @@ resource "aws_instance" "app_server" {
       "pip3 install flask",
       "sudo amazon-linux-extras enable nginx1.12",
       "sudo yum -y install nginx",
-      # "sudo systemctl start nginx",    # Required for "python3 ./code/app.py" 
-      # "python3 ./code/app.py"          # If executes, Terraform won't END
+      "sudo systemctl start nginx",    # Required for "python3 ./code/app.py" 
+      "python3 ./code/app.py"          # If executes, Terraform won't END
     ]
-  }
-
-  # Write ID of created EC2 instace to "data.txt"
-  provisioner "local-exec" {
-    command = <<-EOT
-      echo "${aws_instance.app_server.id}" > instance_id.txt
-    EOT
   }
 
   # user_data: can't execute bash commands
