@@ -123,26 +123,11 @@ resource "aws_instance" "app_server" {
       "pip3 install flask",
       "sudo amazon-linux-extras enable nginx1.12",
       "sudo yum -y install nginx",
+      "sudo systemctl start nginx",
+      "nohup python3 code/app.py > /dev/null 2> /dev/null < /dev/null &",
+      "sleep 10"  # required to finish "nohup"
     ]
   }
-
-
-  provisioner "remote-exec" {
-    inline = [
-      "sudo systemctl start nginx",
-      "nohup python3 code/app.py & > /dev/null",
-      "sleep 10"
-    ]
-}
-
-
-  # user_data: can't execute bash commands
-  # user_data = <<-EOF
-  #        #!/bin/bash
-  #        sudo systemctl start nginx
-  #        python3 ./code/app.py
-  #        EOF
-
 }
 
 
