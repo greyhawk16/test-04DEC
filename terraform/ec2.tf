@@ -1,6 +1,6 @@
 # EC2 role 생성
 resource "aws_iam_role" "test_role" {
-  name               = "cmd-inj-role"
+  name               = "cr-cmd_inj-role-EC2role"
   path               = "/"
   assume_role_policy = <<EOF
   {
@@ -29,7 +29,7 @@ resource "aws_iam_role_policy_attachment" "example_attachment" {
 
 # EC2 인스턴스 프로필 생성
 resource "aws_iam_instance_profile" "cmd-inj_EC2-profile" {
-  name = "cmd-inj__EC2-profile"
+  name = "cr-cmd_inj-EC2_profile-profile"
   role = "${aws_iam_role.test_role.name}"
 }
 
@@ -40,20 +40,20 @@ resource "tls_private_key" "this" {
 }
 
 resource "aws_key_pair" "this" {
-  key_name      = "cmd-inj_key"
+  key_name      = "cr-cmd_inj-key-key_pair"
   public_key    = tls_private_key.this.public_key_openssh
 
   provisioner "local-exec" {
     command = <<-EOT
-      echo "${tls_private_key.this.private_key_pem}" > cmd-inj_key.pem
+      echo "${tls_private_key.this.private_key_pem}" > cr-cmd_inj-key-key_pair.pem
     EOT
   }
 }
 
 
 resource "aws_security_group" "alone_web" {
-  name        = "SG_cmd-inj"
-  description = "SG_cmd-inj"
+  name        = "cr-cmd_inj-SG-SecurityGroup"
+  description = "cr-cmd_inj-SG-SecurityGroup"
   ingress {
     from_port = 22                                           
     to_port = 22                                             
@@ -89,7 +89,7 @@ resource "aws_instance" "app_server" {
   iam_instance_profile = "${aws_iam_instance_profile.cmd-inj_EC2-profile.name}"
   
   tags = {
-    Name = "CMD-inj_app_server"
+    Name = "cr-cmd_inj-app_server-EC2"
   }
   root_block_device {
     volume_size         = 30 
