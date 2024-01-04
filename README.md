@@ -36,4 +36,4 @@ You start as an outsider. Exploit web application vulnerable to command injectio
 4. Copy `txt` file to hosting server.
 5. Use `cat` to see what is inside `txt` file.
 
-A cheat sheet for this route is available [here](./cheat_sheet.md).
+A cheat sheet for this route is available [here](./cheatsheet.md).
