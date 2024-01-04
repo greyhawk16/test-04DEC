@@ -26,7 +26,7 @@ You start as an outsider. Exploit web application vulnerable to command injectio
 
 ## Exploitation Route(s)
 
-![Alt text](./test.jpg)
+![Alt text](./CMD-Inj_route.png)
 
 ## Route Walkthrough - Anonymous
 
